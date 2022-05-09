@@ -7,7 +7,7 @@ namespace Shared.Models
         [Required]
         [EmailAddress]
         [Display(Name = "Email address")]
-        public string EmailAdress { get; set; }
+        public string EmailAddress { get; set; }
 
         [Required]
         [DataType(DataType.Password)]

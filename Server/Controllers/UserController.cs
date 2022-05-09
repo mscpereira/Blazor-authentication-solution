@@ -9,29 +9,32 @@ using System.Text;
 
 namespace Server.Controllers
 {
-    [Route("api/(controller)")]
+    [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly SignInManager<IdentityUser> signInManager;
-        private readonly UserManager<IdentityUser> userManager;
-        private readonly IConfiguration configuration;
+        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly IConfiguration _configuration;
+
+        // yourdomain.com/api/user
 
         public UserController(SignInManager<IdentityUser> signInManager, UserManager<IdentityUser> userManager, IConfiguration configuration)
         {
-            this.signInManager = signInManager;
-            this.userManager = userManager;
-            this.configuration = configuration;
+            _signInManager = signInManager;
+            _userManager = userManager;
+            _configuration = configuration;
         }
 
-        //.../api/user/register
+        // yourdomain.com/api/user/register
         [Route("register")]
         [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> Register([FromBody] User user)
         {
-            string username = user.EmailAdress;
+            string username = user.EmailAddress;
             string password = user.Password;
+
 
             IdentityUser identityUser = new IdentityUser
             {
@@ -39,17 +42,16 @@ namespace Server.Controllers
                 UserName = username
             };
 
-            IdentityResult identityResult = await userManager.CreateAsync(identityUser, password);
-
-            if (identityResult.Succeeded == true)
+            IdentityResult userIdentityResult = await _userManager.CreateAsync(identityUser, password);
+            if (userIdentityResult.Succeeded == true)
             {
-                return Ok(new { identityResult.Succeeded });
+                return Ok(new { userIdentityResult.Succeeded });
             }
             else
             {
-                string errorsToReturn = "register failed with the following errors";
+                string errorsToReturn = "Register failed with the following errors";
 
-                foreach (var error in identityResult.Errors)
+                foreach (var error in userIdentityResult.Errors)
                 {
                     errorsToReturn += Environment.NewLine;
                     errorsToReturn += $"Error code: {error.Code} - {error.Description}";
@@ -62,20 +64,20 @@ namespace Server.Controllers
         [HttpPost]
         public async Task<IActionResult> SignIn([FromBody] User user)
         {
-            string username = user.EmailAdress;
+            string username = user.EmailAddress;
             string password = user.Password;
 
-            Microsoft.AspNetCore.Identity.SignInResult signInResult = await signInManager.PasswordSignInAsync(username, password, false, false);
+            Microsoft.AspNetCore.Identity.SignInResult signInResult = await _signInManager.PasswordSignInAsync(username, password, false, false);
 
             if (signInResult.Succeeded == true)
             {
-                IdentityUser identityUser = await userManager.FindByNameAsync(username);
+                IdentityUser identityUser = await _userManager.FindByNameAsync(username);
                 string JSONWebTokenAsString = await GenerateJSONWebToken(identityUser);
                 return Ok(JSONWebTokenAsString);
             }
             else
             {
-                return Unauthorized(User);
+                return Unauthorized(user);
             }
         }
 
@@ -83,23 +85,25 @@ namespace Server.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         private async Task<string> GenerateJSONWebToken(IdentityUser identityUser)
         {
-            SymmetricSecurityKey symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
+            SymmetricSecurityKey symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+
             SigningCredentials credentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
 
-            // claim = who is the person trying to sign in claiming to be?
+            // Claim = who is the person trying to sign in claming to be?
             List<Claim> claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, identityUser.Email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, identityUser.Id)
-            };
-            IList<string> roleNames = await userManager.GetRolesAsync(identityUser);
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, identityUser.Email),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(ClaimTypes.NameIdentifier, identityUser.Id)
+        };
+
+            IList<string> roleNames = await _userManager.GetRolesAsync(identityUser);
             claims.AddRange(roleNames.Select(roleName => new Claim(ClaimsIdentity.DefaultRoleClaimType, roleName)));
 
             JwtSecurityToken jwtSecurityToken = new JwtSecurityToken
             (
-                configuration["Jwt:Issuer"],
-                configuration["Jwt:Issuer"],
+                _configuration["Jwt:Issuer"],
+                _configuration["Jwt:Issuer"],
                 claims,
                 null,
                 expires: DateTime.UtcNow.AddDays(28),
