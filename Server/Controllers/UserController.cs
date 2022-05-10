@@ -43,7 +43,8 @@ namespace Server.Controllers
             };
 
             IdentityResult userIdentityResult = await _userManager.CreateAsync(identityUser, password);
-            if (userIdentityResult.Succeeded == true)
+            IdentityResult roleIdentityResult = await _userManager.AddToRoleAsync(identityUser, "Administrator");
+            if (userIdentityResult.Succeeded == true && roleIdentityResult.Succeeded == true)
             {
                 return Ok(new { userIdentityResult.Succeeded });
             }

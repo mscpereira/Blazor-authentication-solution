@@ -57,6 +57,9 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    RoleManager<IdentityRole> roleManager = builder.Services.BuildServiceProvider().GetService<RoleManager<IdentityRole>>();
+    UserManager<IdentityUser> userManager = builder.Services.BuildServiceProvider().GetService<UserManager<IdentityUser>>();
+    SeedAdministratorRoleAndUser.Seed(roleManager, userManager);
     app.UseDeveloperExceptionPage();
 }
 app.UseSwagger();

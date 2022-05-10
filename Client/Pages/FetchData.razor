@@ -9,7 +9,8 @@
 
 @if (forecasts == null)
 {
-    <p><em>Loading...</em></p>
+    <h1>You are not authorized to access weather data. Please sign in via the button below.</h1>
+    <a href="/signin" class="btn btn-primary btn-lg">Sign</a>
 }
 else
 {
@@ -37,11 +38,17 @@ else
 }
 
 @code {
-    private WeatherForecast[]? forecasts;
+    private WeatherForecast[]? forecasts = null;
+    [CascadingParameter] protected Task<AuthenticationState> AuthenticationState {get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("https://localhost:7200/weatherforecast");
+        var user = (await AuthenticationState).User;
+
+        if(user.Identity.IsAuthenticated == true)
+        {
+            forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("https://localhost:7200/weatherforecast");
+        }
     }
 
     public class WeatherForecast
