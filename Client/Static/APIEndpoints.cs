@@ -9,6 +9,8 @@
 #endif
         internal readonly static string s_register = $"{ServerBaseUrl}/api/user/register";
         internal readonly static string s_signIn = $"{ServerBaseUrl}/api/user/signin";
+        internal readonly static string s_blogPosts = $"{ServerBaseUrl}/api/data/BlogPosts";
+        internal readonly static string s_reviewers = $"{ServerBaseUrl}/api/data/Reviewers";
         //internal readonly static string s_weatherForecast = $"{ServerBaseUrl}/weatherforecast";
     }
 }

@@ -2,6 +2,8 @@
 @using Blazored.LocalStorage
 @using Client.Providers
 @using System.Net.Http.Headers
+@using BlazorWASMAuthentication
+@inject BlazorWASMAuthentication.Client.Services.IBlogPostService BlogPostService
 
 <PageTitle>Index</PageTitle>
 
@@ -11,10 +13,13 @@ Welcome to your new app.
 
 <SurveyPrompt Title="How is Blazor working for you?" />
 
+<BlogPosts />
+
 @code {
     [Inject] HttpClient HttpClient { get; set; }
     [Inject] AuthenticationStateProvider AuthenticationStateProvider {get; set;}
     [Inject] ILocalStorageService LocalStorageService {get; set;}
+    private List<BlogPost> OurPosts = new List<BlogPost>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -25,6 +30,8 @@ Welcome to your new app.
             HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", savedToken);
             StateHasChanged();
         }
+		OurPosts = await BlogPostService.GetBlogPosts();
+
     }
 
 }

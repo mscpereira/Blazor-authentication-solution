@@ -1,0 +1,73 @@
+﻿@using System.Drawing
+@inject BlazorWASMAuthentication.Client.Services.IBlogPostService BlogPostService
+
+<div class="container container__main">
+	<section class="bg-transparent">
+		<div class="container py-2">
+			<div class="h1 text-center text-dark" id="pageHeaderTitle">Latest Reviews</div>
+				
+			@foreach (var post in OurPosts)
+		{
+				if((@post.Id)%2 != 0)
+				{
+					<article class="postcard light blue">
+						<a class="postcard__img_link" href="#">
+							<img class="postcard__img" src="@post.Image" alt="Image Title" />
+						</a>
+						<div class="postcard__text t-dark">
+							<h1 class="postcard__title blue"><a href="#">@post.Title</a></h1>
+							<div class="postcard__subtitle small">
+								<time datetime="@post.DateCreated">
+									<i class="fas fa-calendar-alt mr-2"></i>@post.DateCreated.DayOfWeek, @post.DateCreated.Day/@post.DateCreated.Month/@post.DateCreated.Year
+								</time>
+							</div>
+							<div class="postcard__bar"></div>
+							<div class="postcard__preview-txt">@post.Description</div>
+							<ul class="postcard__tagbox">
+								<li class="tag__item"><i class="fas fa-tag mr-2"></i>Map</li>
+								<li class="tag__item"><i class="fas fa-clock mr-2"></i>Rate</li>
+								<li class="tag__item play green">
+									<a href="/posts/@post.Url"><i class="fas fa-play mr-2"></i>Read more...</a>
+								</li>
+							</ul>
+						</div>
+					</article>
+					}
+					else
+					{
+					<article class="postcard light blue">
+						<a class="postcard__img_link" href="#">
+							<img class="postcard__img" src="@post.Image" alt="Image Title" />	
+						</a>
+						<div class="postcard__text t-dark">
+							<h1 class="postcard__title blue"><a href="#">@post.Title</a></h1>
+							<div class="postcard__subtitle small">
+								<time datetime="@post.DateCreated">
+									<i class="fas fa-calendar-alt mr-2"></i>@post.DateCreated.DayOfWeek, @post.DateCreated.Day/@post.DateCreated.Month/@post.DateCreated.Year
+								</time>
+							</div>
+							<div class="postcard__bar"></div>
+							<div class="postcard__preview-txt">@post.Description</div>
+							<ul class="postcard__tagbox">
+								<li class="tag__item"><i class="fas fa-tag mr-2"></i>Map</li>
+								<li class="tag__item"><i class="fas fa-clock mr-2"></i>Rate</li>
+								<li class="tag__item play green">
+									<a href="/posts/@post.Url"><i class="fas fa-play mr-2"></i>Read more...</a>
+								</li>
+							</ul>
+						</div>
+					</article>
+				}
+			}
+		</div>
+	</section>
+</div>
+
+@code {
+	private List<BlogPost> OurPosts = new List<BlogPost>();
+
+	protected override async Task OnInitializedAsync()
+	{
+		OurPosts = await BlogPostService.GetBlogPosts();
+	}
+}
